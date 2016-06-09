@@ -33,13 +33,14 @@ def get_object_line(object_body):
 
 
 VENMO_BUCKET='venmo-json'
+KAFKA_SERVER='ec2-52-41-8-111.us-west-2.compute.amazonaws.com'
 KAFKA_TOPIC='venmo-data'
 NUM_RECORDS=100
 
 s3_bucket = get_s3_bucket(VENMO_BUCKET)
 s3_object = get_s3_object(s3_bucket)
 producer = KafkaProducer(
-    bootstrap_servers='localhost',
+    bootstrap_servers=KAFKA_SERVER,
     value_serializer=lambda v: json.dumps(v).encode('utf-8'),
 )
 
