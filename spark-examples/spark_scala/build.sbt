@@ -8,7 +8,8 @@ libraryDependencies ++= Seq(
 "org.apache.spark" %% "spark-core" % "1.6.0" % "provided",
 "org.apache.spark" %% "spark-sql" % "1.6.0" % "provided",
 "org.apache.spark" % "spark-streaming_2.10" % "1.6.0" % "provided",
-"org.apache.spark" % "spark-streaming-kafka_2.10" % "1.6.0"
+"org.apache.spark" % "spark-streaming-kafka_2.10" % "1.6.0",
+"org.elasticsearch" % "elasticsearch-hadoop" % "2.3.2"
 )
 
 mergeStrategy in assembly := {
@@ -19,3 +20,6 @@ mergeStrategy in assembly := {
   case "reference.conf"                                    => MergeStrategy.concat
   case _                                                   => MergeStrategy.first
 }
+
+resolvers += "clojars" at "https://clojars.org/repo"
+resolvers += "conjars.org" at "http://conjars.org/repo"
