@@ -7,6 +7,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql._
 
 import org.elasticsearch.spark._
+import com.datastax.spark.connector._
+import com.datastax.spark.connector.streaming._
+import com.datastax.driver.core.utils._
 
 
 object PriceDataStreaming {
@@ -23,6 +26,7 @@ object PriceDataStreaming {
     val sparkConf = new SparkConf().setAppName("price_data")
     sparkConf.set("es.index.auto.create", "true")
              .set("es.nodes", elasticsearchUrl)
+             .set("spark.cassandra.connection.host", "ec2-52-41-40-156.us-west-2.compute.amazonaws.com")
 
     val ssc = new StreamingContext(sparkConf, Seconds(2))
 
@@ -32,15 +36,21 @@ object PriceDataStreaming {
 
 
     messages.foreachRDD { rdd =>
-      // write to ElasticSearch
-      rdd.saveJsonToEs("spark/json")
+      if (rdd.toLocalIterator.nonEmpty) {
+          // write to ElasticSearch
+          rdd.saveJsonToEs("spark/json")
 
-      val sqlContext = SQLContextSingleton.getInstance(rdd.sparkContext)
+          val sqlContext = SQLContextSingleton.getInstance(rdd.sparkContext)
 
-      import sqlContext.implicits._
+          import sqlContext.implicits._
 
-      val df = sqlContext.jsonRDD(rdd)
-      df.show()
+          val df = sqlContext.jsonRDD(rdd)
+          df.registerTempTable("payments")
+
+          sqlContext.sql("SELECT payment_id, message FROM payments")
+              .map{ case Row(payment_id: Long, message: String) => MessageByPaymentId(payment_id, message) }
+              .saveToCassandra("payments","test", SomeColumns("id", "message"))
+      }
     }
 
     // Start the computation
@@ -48,6 +58,9 @@ object PriceDataStreaming {
     ssc.awaitTermination()
   }
 }
+
+
+case class MessageByPaymentId(id: Long, message: String)
 
 
 /** Lazily instantiated singleton instance of SQLContext */

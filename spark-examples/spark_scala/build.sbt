@@ -5,10 +5,11 @@ version := "1.0"
 scalaVersion := "2.10.4"
 
 libraryDependencies ++= Seq(
-"org.apache.spark" %% "spark-core" % "1.6.0" % "provided",
-"org.apache.spark" %% "spark-sql" % "1.6.0" % "provided",
-"org.apache.spark" % "spark-streaming_2.10" % "1.6.0" % "provided",
-"org.apache.spark" % "spark-streaming-kafka_2.10" % "1.6.0",
+"com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0",
+"org.apache.spark" %% "spark-core" % "1.6.1" % "provided",
+"org.apache.spark" %% "spark-sql" % "1.6.1" % "provided",
+"org.apache.spark" % "spark-streaming_2.10" % "1.6.1" % "provided",
+"org.apache.spark" % "spark-streaming-kafka_2.10" % "1.6.1",
 "org.elasticsearch" % "elasticsearch-hadoop" % "2.3.2"
 )
 
