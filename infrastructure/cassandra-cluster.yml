@@ -5,7 +5,7 @@ num_instances: 2
 key_name: ahmed-altaha
 security_group_ids: sg-d5b97fb3
 instance_type: m4.large
-tag_name: elasticsearch-cluster-ahmed
+tag_name: cassandra-cluster-ahmed
 vol_size: 100
-role: master
+role: worker
 use_eips: true

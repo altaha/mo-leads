@@ -7,9 +7,8 @@ peg up spark-datanodes.yml
 # Store cluster information
 peg fetch spark-cluster-ahmed
 
-# Enable passwordless SSH and install Hadoop, Zookeeper, Spark and Cassandra
+# Enable passwordless SSH and install Hadoop, Spark
 peg install spark-cluster-ahmed ssh
 peg install spark-cluster-ahmed aws
 peg install spark-cluster-ahmed hadoop
 peg install spark-cluster-ahmed spark
-peg install spark-cluster-ahmed cassandra
