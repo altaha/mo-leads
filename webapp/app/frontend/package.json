@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Insight data engineering project - generating sales leads from payment data",
   "scripts": {
-    "build": "webpack --config webpack.config.prod.js --progress --profile --colors",
+    "build": "webpack --config webpack.config.prod.js --progress --profile --colors --watch",
     "dev": "webpack-dev-server --progress --profile --colors --hot",
     "test": "node_modules/.bin/mocha --require babel-core/register -w"
   },
@@ -15,6 +15,7 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/altaha/mo-leads",
   "dependencies": {
+    "immutable": "^3.8.1",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
     "react-tagcloud": "^0.5.0",
