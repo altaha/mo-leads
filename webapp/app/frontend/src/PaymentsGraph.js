@@ -1,0 +1,47 @@
+import Immutable from 'immutable'
+import React from 'react'
+
+import Graph from './GraphVis'
+
+
+class PaymentsGraph extends React.Component {
+    static propTypes = {
+        adjacencyList: React.PropTypes.object.isRequired
+    }
+
+    render() {
+        const adjacencyList = this.props.adjacencyList.map((payment) => {
+            return {
+                actorId: payment.get('actor_id'),
+                actorName: payment.get('actor_name'),
+                targetId: payment.get('target_id'),
+                targetName: payment.get('target_name')
+            }
+        })
+        if (adjacencyList.isEmpty()) {
+            return null
+        }
+
+        const graphEdges = adjacencyList.map((payment) => {
+            return {from: payment.actorId, to: payment.targetId}
+        })
+
+        const graphNodes = adjacencyList.flatMap((payment) => {
+            return new Immutable.fromJS([
+                {id: payment.actorId, label: payment.actorName},
+                {id: payment.targetId, label: payment.targetName}
+            ])
+        }).toSet()
+
+        const graphData = {
+            nodes: graphNodes.toJS(),
+            edges: graphEdges.toArray()
+        }
+
+        return (
+            <Graph graph={graphData} />
+        )
+    }
+}
+
+export default PaymentsGraph

@@ -1,4 +1,8 @@
-from flask import jsonify, render_template
+from flask import (
+    jsonify,
+    render_template,
+    request,
+)
 
 from app import app
 from cassandra.cluster import Cluster
@@ -31,6 +35,16 @@ def get_message(id):
     response = session.execute(statement)
     json_response = [{'id': x.id, 'message': x.message} for x in response]
     return jsonify(messages=json_response)
+
+
+@app.route('/api/adjacency/')
+def get_adjacency():
+    root_users = request.args.get('root').split(',')
+    statement = 'SELECT * FROM adjacency WHERE actor_id IN ({})'.format(
+        ','.join('\'{}\''.format(user) for user in root_users)
+    )
+    response = session.execute(statement)
+    return jsonify([x for x in response])
 
 
 @app.route('/api/payments/<keywords>')

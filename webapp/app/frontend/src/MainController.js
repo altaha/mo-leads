@@ -1,21 +1,23 @@
 import Immutable from 'immutable'
 import React from 'react'
 
+import PaymentsGraph from './PaymentsGraph'
 import PaymentsWordCloud from './PaymentsWordCloud'
 import UserInputController from './UserInputController'
 
 const REST_API = {
-    PAYMENTS_FOR_KEYWORD: (keyword) => `/api/payments/${keyword}`
+    PAYMENTS_FOR_KEYWORD: (keyword) => `/api/payments/${keyword}`,
+    ADJACENCY_LIST: (payerList) => `/api/adjacency/?root=${payerList}`
 }
 
 
 class MainController extends React.Component {
     constructor(props) {
         super(props)
-
         this.state = {
             hasQueryWord: false,
             queryWord: '',
+            queryWordAdjacency: new Immutable.List(),
             queryWordPayments: new Immutable.List(),
             hasExpandedKeywords: false,
             expandedKeyWords: new Immutable.List(),
@@ -34,6 +36,9 @@ class MainController extends React.Component {
                 <PaymentsWordCloud
                     payments={this.state.queryWordPayments}
                 />
+                <PaymentsGraph
+                    adjacencyList={this.state.queryWordAdjacency}
+                />
             </div>
         )
     }
@@ -42,7 +47,9 @@ class MainController extends React.Component {
         const hasQueryWord = queryWord === ''
         this.setState({
             hasQueryWord,
-            queryWord
+            queryWord,
+            queryWordPayments: new Immutable.List(),
+            queryWordAdjacency: new Immutable.List()
         }, this.fetchQueryWordPayments)
     }
 
@@ -57,6 +64,28 @@ class MainController extends React.Component {
             )
             this.setState({
                 queryWordPayments: Immutable.fromJS(payments)
+            }, this.fetchPaymentsAdjacency)
+        }).catch((ex) => {
+            console.error('fetch failed', ex)
+        })
+    }
+
+    fetchPaymentsAdjacency = () => {
+        const payments = this.state.queryWordPayments
+        const payerList = payments.map(
+            payment => payment.getIn(['actor', 'id'])
+        ).toSet().join(',')
+        if (payerList === '') {
+            return
+        }
+
+        fetch(
+            REST_API.ADJACENCY_LIST(payerList)
+        ).then((response) => {
+            return response.json()
+        }).then((adjacencyList) => {
+            this.setState({
+                queryWordAdjacency: Immutable.fromJS(adjacencyList)
             })
         }).catch((ex) => {
             console.error('fetch failed', ex)

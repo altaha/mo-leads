@@ -9,7 +9,7 @@ class Graph extends React.Component {
         super(props)
         this.updateGraph = this.updateGraph.bind(this)
         this.state = {
-            hierarchicalLayout: true
+            hierarchicalLayout: false
         }
     }
 

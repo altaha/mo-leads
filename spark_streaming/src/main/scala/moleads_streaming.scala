@@ -46,11 +46,14 @@ object MoLeadsStreaming {
                 val dataFrame = sqlContext.jsonRDD(rdd)
                 dataFrame.registerTempTable("payments")
 
-                sqlContext.sql("SELECT payment_id, created_time, message, actor.id as actor_id, transactions[0].target.id as target_id FROM payments")
-                    .map{ case Row(payment_id: Long, created_time: String, message: String, actor_id: String, target_id: String) =>
-                               MessageByActorTargetId(payment_id, created_time, message, actor_id, target_id)
+                sqlContext.sql("SELECT payment_id as id, created_time as time, message, actor.id as actor_id, actor.name as actor_name, transactions[0].target.id as target_id, transactions[0].target.name as target_name FROM payments")
+                    .map{ case Row(id: Long, time: String, message: String,
+                                   actor_id: String, actor_name: String,
+                                   target_id: String, target_name: String
+                               ) =>
+                               ActorTargetAdjacency(id, time, message, actor_id, actor_name, target_id, target_name)
                     }.saveToCassandra("moleads","adjacency",
-                        SomeColumns("id", "created_time", "message", "actor_id", "target_id")
+                        SomeColumns("id", "time", "message", "actor_id", "actor_name", "target_id", "target_name")
                     )
             }
         }
@@ -62,9 +65,9 @@ object MoLeadsStreaming {
 }
 
 
-case class MessageByPaymentId(id: Long, message: String)
-
-case class MessageByActorTargetId(id: Long, created_time: String, message: String, actor_id: String, target_id: String)
+case class ActorTargetAdjacency(
+    id: Long, time: String, message: String, actor_id: String, actor_name: String, target_id: String, target_name: String
+)
 
 
 /** Lazily instantiated singleton instance of SQLContext */

@@ -1,0 +1,2 @@
+## Create tables
+CREATE TABLE adjacency (id int, time timestamp, message text, actor_id text, actor_name text, target_id text, target_name text, PRIMARY KEY (actor_id, time), ) WITH CLUSTERING ORDER BY (time DESC);

@@ -38,7 +38,6 @@ class UserInputController extends React.Component {
     }
 
     onSubmitQueryKeyword = () => {
-        console.log(this.state.queryKeywordValue)
         this.props.onUpdateQueryWord(this.state.queryKeywordValue)
     }
 }
