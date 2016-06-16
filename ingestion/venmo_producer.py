@@ -2,6 +2,7 @@ import boto3
 import botocore
 import json
 from kafka import KafkaProducer
+import sys
 
 
 class S3BucketReader(object):
@@ -45,20 +46,33 @@ class S3BucketReader(object):
 VENMO_BUCKET='venmo-json'
 KAFKA_SERVER='localhost'
 KAFKA_TOPIC='venmo-data'
-NUM_RECORDS=100000
+NUM_RECORDS=10000
 
-s3_reader = S3BucketReader(VENMO_BUCKET)
-producer = KafkaProducer(
-    bootstrap_servers=KAFKA_SERVER,
-    value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-)
-
-count = 0
-for line in s3_reader.lines(NUM_RECORDS):
-    transaction = json.loads(line)
-    producer.send(
-        KAFKA_TOPIC,
-        value=transaction,
-        key=transaction['actor']['id'].encode('UTF-8'),
+if __name__ == "__main__":
+    args = sys.argv
+    producer = KafkaProducer(
+        bootstrap_servers=KAFKA_SERVER,
+        value_serializer=lambda v: json.dumps(v).encode('utf-8'),
     )
-producer.flush()
+
+    source = str(args[1])
+    if source == 's3':
+        reader = S3BucketReader(VENMO_BUCKET)
+        for line in reader.lines(NUM_RECORDS):
+            transaction = json.loads(line)
+            producer.send(
+                KAFKA_TOPIC,
+                value=transaction,
+                key=transaction['actor']['id'].encode('UTF-8'),
+            )
+    else:
+        file_name = str(args[2])
+        reader = open(file_name, 'r')
+        for line in reader:
+            transaction = json.loads(line)
+            producer.send(
+                KAFKA_TOPIC,
+                value=transaction,
+                key=transaction['actor']['id'].encode('UTF-8'),
+            )
+    producer.flush()
