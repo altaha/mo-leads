@@ -3,6 +3,7 @@ import React from 'react'
 
 import PaymentsGraph from './PaymentsGraph'
 import PaymentsWordCloud from './PaymentsWordCloud'
+import TopUsersView from './TopUsersView'
 import UserInputController from './UserInputController'
 
 const REST_API = {
@@ -19,10 +20,7 @@ class MainController extends React.Component {
             queryWord: '',
             queryWordAdjacency: new Immutable.List(),
             queryWordPayments: new Immutable.List(),
-            hasExpandedKeywords: false,
-            expandedKeyWords: new Immutable.List(),
-            queryWordGraph: new Immutable.Map(),
-            expandedKeyWordsGraph: new Immutable.Map()
+            queryWordTopUsers: new Immutable.List()
         }
     }
 
@@ -36,6 +34,9 @@ class MainController extends React.Component {
                 <PaymentsWordCloud
                     payments={this.state.queryWordPayments}
                 />
+                <TopUsersView
+                    topUsers={this.state.queryWordTopUsers}
+                />
                 <PaymentsGraph
                     adjacencyList={this.state.queryWordAdjacency}
                 />
@@ -48,8 +49,9 @@ class MainController extends React.Component {
         this.setState({
             hasQueryWord,
             queryWord,
+            queryWordAdjacency: new Immutable.List(),
             queryWordPayments: new Immutable.List(),
-            queryWordAdjacency: new Immutable.List()
+            queryWordTopUsers: new Immutable.List()
         }, this.fetchQueryWordPayments)
     }
 
@@ -86,9 +88,23 @@ class MainController extends React.Component {
         }).then((adjacencyList) => {
             this.setState({
                 queryWordAdjacency: Immutable.fromJS(adjacencyList)
-            })
+            }, this.getQueryWordTopUsers)
         }).catch((ex) => {
             console.error('fetch failed', ex)
+        })
+    }
+
+    getQueryWordTopUsers = () => {
+        const adjacencyList = this.state.queryWordAdjacency
+        if (adjacencyList.isEmpty()) {
+            return
+        }
+
+        const topUsers = adjacencyList.countBy(
+            entry => entry.get('actor_id')
+        ).sort().reverse()
+        this.setState({
+            queryWordTopUsers: topUsers
         })
     }
 }
