@@ -8,7 +8,11 @@ import UserInputController from './UserInputController'
 
 const REST_API = {
     PAYMENTS_FOR_KEYWORD: (keyword) => `/api/payments/${keyword}`,
-    ADJACENCY_LIST: (payerList) => `/api/adjacency/?root=${payerList}`
+    ADJACENCY_LIST: (payerList, startDate, endDate) => {
+        const startDateParam = startDate !== '' ? `&t1=${startDate}` : ''
+        const endDateParam = endDate !== '' ? `&t2=${endDate}` : ''
+        return `/api/adjacency/?root=${payerList}${startDateParam}${endDateParam}`
+    }
 }
 
 
@@ -44,11 +48,13 @@ class MainController extends React.Component {
         )
     }
 
-    onUpdateQueryWord = (queryWord) => {
+    onUpdateQueryWord = (queryWord, queryStartDate, queryEndDate) => {
         const hasQueryWord = queryWord === ''
         this.setState({
             hasQueryWord,
             queryWord,
+            queryStartDate,
+            queryEndDate,
             queryWordAdjacency: new Immutable.List(),
             queryWordPayments: new Immutable.List(),
             queryWordTopUsers: new Immutable.List()
@@ -82,7 +88,11 @@ class MainController extends React.Component {
         }
 
         fetch(
-            REST_API.ADJACENCY_LIST(payerList)
+            REST_API.ADJACENCY_LIST(
+                payerList,
+                this.state.queryStartDate,
+                this.state.queryEndDate
+            )
         ).then((response) => {
             return response.json()
         }).then((adjacencyList) => {

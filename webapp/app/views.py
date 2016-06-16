@@ -40,8 +40,15 @@ def get_message(id):
 @app.route('/api/adjacency/')
 def get_adjacency():
     root_users = request.args.get('root').split(',')
-    statement = 'SELECT * FROM adjacency WHERE actor_id IN ({})'.format(
-        ','.join('\'{}\''.format(user) for user in root_users)
+    t1 = request.args.get('t1')
+    start_time_filter = 'AND time >= \'{}\''.format(t1) if t1 else ''
+    t2 = request.args.get('t2')
+    end_time_filter = 'AND time <= \'{}\''.format(t2) if t2 else ''
+
+    statement = 'SELECT * FROM adjacency WHERE actor_id IN ({0}) {1} {2};'.format(
+        ','.join('\'{}\''.format(user) for user in root_users),
+        start_time_filter,
+        end_time_filter,
     )
     response = session.execute(statement)
     return jsonify([x for x in response])
@@ -51,6 +58,9 @@ def get_adjacency():
 def get_elastic_search_messages(keywords):
     result = es.search(
         index='spark',
-        body={'query': {'match': {'message': keywords}}},
+        body={
+            'from': 0, 'size': 100,
+            'query': {'match': {'message': keywords}}
+        },
     )
     return jsonify(payments=result['hits']['hits'])
