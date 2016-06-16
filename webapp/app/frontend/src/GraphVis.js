@@ -5,12 +5,25 @@ const uuid = require('uuid')
 
 
 class Graph extends React.Component {
-    constructor(props) {
-        super(props)
-        this.updateGraph = this.updateGraph.bind(this)
-        this.state = {
-            hierarchicalLayout: false
-        }
+
+    static propTypes = {
+        graph: React.PropTypes.object,
+        identified: React.PropTypes.string,
+        onClickEdge: React.PropTypes.func,
+        onClickNode: React.PropTypes.func,
+        style: React.PropTypes.object
+    }
+
+    static defaultProps = {
+        graph: {},
+        identifier: uuid.v4(),
+        onClickEdge: () => {},
+        onClickNode: () => {},
+        style: {width: '640px', height: '480px'}
+    }
+
+    state = {
+        hierarchicalLayout: false
     }
 
     componentDidMount() {
@@ -52,7 +65,14 @@ class Graph extends React.Component {
             options.layout = {hierarchical: false}
         }
 
-        new vis.Network(container, this.props.graph, options)
+        this.network = new vis.Network(container, this.props.graph, options)
+        this.network.on('select', function(params) {
+            if (params.nodes.length > 0) {
+                this.props.onClickNode(params.nodes[0])
+            } else if (params.edges.length > 0) {
+                this.props.onClickEdge(params.edges[0])
+            }
+        }.bind(this))
     }
 
     render() {
@@ -64,10 +84,4 @@ class Graph extends React.Component {
     }
 }
 
-Graph.defaultProps = {
-    graph: {},
-    identifier: uuid.v4(),
-    style: {width: '640px', height: '480px'}
-}
-
-module.exports = Graph
+export default Graph

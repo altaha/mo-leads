@@ -15,7 +15,8 @@ class PaymentsGraph extends React.Component {
                 actorId: payment.get('actor_id'),
                 actorName: payment.get('actor_name'),
                 targetId: payment.get('target_id'),
-                targetName: payment.get('target_name')
+                targetName: payment.get('target_name'),
+                id: payment.get('id')
             }
         })
         if (adjacencyList.isEmpty()) {
@@ -23,7 +24,7 @@ class PaymentsGraph extends React.Component {
         }
 
         const graphEdges = adjacencyList.map((payment) => {
-            return {from: payment.actorId, to: payment.targetId}
+            return {id: payment.id, from: payment.actorId, to: payment.targetId}
         })
 
         const graphNodes = adjacencyList.flatMap((payment) => {
