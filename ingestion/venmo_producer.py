@@ -43,36 +43,37 @@ class S3BucketReader(object):
                     buf.append(char)
 
 
+class KafkaWriter(object):
+    def __init__(self, kafka_server):
+        self.producer = KafkaProducer(
+            bootstrap_servers=kafka_server,
+            value_serializer=lambda v: v.encode('UTF-8'),
+        )
+
+    def write(self, kafka_topic, value):
+        self.producer.send(
+            kafka_topic,
+            value=value,
+        )
+
+
 VENMO_BUCKET='venmo-json'
 KAFKA_SERVER='localhost'
 KAFKA_TOPIC='venmo-data'
 NUM_RECORDS=10000
 
+
 if __name__ == "__main__":
     args = sys.argv
-    producer = KafkaProducer(
-        bootstrap_servers=KAFKA_SERVER,
-        value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-    )
-
+    kafka_writer = KafkaWriter(KAFKA_SERVER)
     source = str(args[1])
     if source == 's3':
         reader = S3BucketReader(VENMO_BUCKET)
         for line in reader.lines(NUM_RECORDS):
-            transaction = json.loads(line)
-            producer.send(
-                KAFKA_TOPIC,
-                value=transaction,
-                key=transaction['actor']['id'].encode('UTF-8'),
-            )
+            kafka_writer.write(KAFKA_TOPIC, line)
     else:
         file_name = str(args[2])
-        reader = open(file_name, 'r')
-        for line in reader:
-            transaction = json.loads(line)
-            producer.send(
-                KAFKA_TOPIC,
-                value=transaction,
-                key=transaction['actor']['id'].encode('UTF-8'),
-            )
-    producer.flush()
+        with open(file_name, 'r') as reader:
+            for line in reader:
+                kafka_writer.write(KAFKA_TOPIC, line)
+    kafka_writer.producer.flush()
