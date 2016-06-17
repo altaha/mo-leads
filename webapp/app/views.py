@@ -57,7 +57,8 @@ def get_adjacency():
 @app.route('/api/payments/<keywords>')
 def get_elastic_search_messages(keywords):
     result = es.search(
-        index='spark',
+        index='moleads',
+        doc_type='payment',
         body={
             'from': 0, 'size': 100,
             'query': {'match': {'message': keywords}}

@@ -1,0 +1,39 @@
+## Create index with mapping
+
+curl -XPUT 'http://localhost:9200/moleads' -d '
+{"mappings": {
+    "payment" : {
+        "dynamic" : "strict",
+        "properties" : {
+            "id" : {
+                "type" : "long",
+                "index": "no"
+             },
+            "time" : {
+                "type" : "date",
+                "index": "no"
+             },
+            "message" : {
+                "type" : "string",
+                "index": "analyzed"
+             },
+            "actor_id" : {
+                "type" : "string",
+                "index": "no"
+             },
+            "actor_name" : {
+                "type" : "string",
+                "index": "no"
+             },
+            "target_id" : {
+                "type" : "string",
+                "index": "no"
+             },
+            "target_name" : {
+                "type" : "string",
+                "index": "no"
+             }
+        }
+    }
+ }
+}'

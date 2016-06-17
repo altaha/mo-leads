@@ -15,7 +15,7 @@ import com.datastax.driver.core.utils._
 object MoLeadsStreaming {
 
     val kafkaBroker = "ec2-52-41-59-147.us-west-2.compute.amazonaws.com:9092"
-    val kafkaTopics = "test"
+    val kafkaTopics = "venmo-data"
     val elasticsearchUrl = "ec2-52-41-104-228.us-west-2.compute.amazonaws.com"
     val cassandraHost = "ec2-52-10-45-242.us-west-2.compute.amazonaws.com"
 
@@ -25,36 +25,38 @@ object MoLeadsStreaming {
         val sparkConf = new SparkConf().setAppName("mo_leads")
         sparkConf.set("es.index.auto.create", "true")
                  .set("es.nodes", elasticsearchUrl)
+                 .set("es.mapping.id", "id")
                  .set("spark.cassandra.connection.host", cassandraHost)
 
-        val ssc = new StreamingContext(sparkConf, Seconds(1))
+        val ssc = new StreamingContext(sparkConf, Seconds(2))
 
         // Create direct kafka stream with brokers and topics
         val topicsSet = kafkaTopics.split(",").toSet
-        val kafkaParams = Map[String, String]("metadata.broker.list" -> kafkaBroker,
-                                              "auto.offset.reset" -> "smallest")
+        val kafkaParams = Map[String, String]("metadata.broker.list" -> kafkaBroker)
         val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topicsSet).map(_._2)
 
         messages.foreachRDD { rdd =>
             if (rdd.toLocalIterator.nonEmpty) {
-                // write to ElasticSearch
-                rdd.saveJsonToEs("spark/json")
-
                 val sqlContext = SQLContextSingleton.getInstance(rdd.sparkContext)
                 import sqlContext.implicits._
 
                 val dataFrame = sqlContext.jsonRDD(rdd)
                 dataFrame.registerTempTable("payments")
 
-                sqlContext.sql("SELECT payment_id as id, created_time as time, message, actor.id as actor_id, actor.name as actor_name, transactions[0].target.id as target_id, transactions[0].target.name as target_name FROM payments")
-                    .map{ case Row(id: Long, time: String, message: String,
-                                   actor_id: String, actor_name: String,
-                                   target_id: String, target_name: String
-                               ) =>
-                               ActorTargetAdjacency(id, time, message, actor_id, actor_name, target_id, target_name)
-                    }.saveToCassandra("moleads","adjacency",
-                        SomeColumns("id", "time", "message", "actor_id", "actor_name", "target_id", "target_name")
-                    )
+                val paymentRDD = sqlContext.sql("SELECT payment_id as id, created_time as time, message, actor.id as actor_id, actor.name as actor_name, transactions[0].target.id as target_id, transactions[0].target.name as target_name FROM payments")
+                paymentRDD.show(10)
+
+                val adjacency = paymentRDD.map{
+                    case Row(id: Long, time: String, message: String,
+                             actor_id: String, actor_name: String,
+                             target_id: String, target_name: String
+                         ) =>
+                            ActorTargetAdjacency(id, time, message, actor_id, actor_name, target_id, target_name)
+                    }
+                adjacency.saveToCassandra("moleads","adjacency",
+                    SomeColumns("id", "time", "message", "actor_id", "actor_name", "target_id", "target_name")
+                )
+                adjacency.saveToEs("moleads/payment")
             }
         }
 

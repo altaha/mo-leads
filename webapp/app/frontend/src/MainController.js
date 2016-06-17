@@ -81,7 +81,7 @@ class MainController extends React.Component {
     fetchPaymentsAdjacency = () => {
         const payments = this.state.queryWordPayments
         const payerList = payments.map(
-            payment => payment.getIn(['actor', 'id'])
+            payment => payment.get('actor_id')
         ).toSet().join(',')
         if (payerList === '') {
             return
