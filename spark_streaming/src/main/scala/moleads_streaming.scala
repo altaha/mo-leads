@@ -10,6 +10,8 @@ import org.elasticsearch.spark._
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.streaming._
 import com.datastax.driver.core.utils._
+import org.json4s._
+import org.json4s.jackson.JsonMethods
 
 
 object MoLeadsStreaming {
@@ -35,28 +37,27 @@ object MoLeadsStreaming {
         val kafkaParams = Map[String, String]("metadata.broker.list" -> kafkaBroker)
         val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topicsSet).map(_._2)
 
-        messages.foreachRDD { rdd =>
+        val adjacencyRDD = messages.map(
+            JsonMethods.parse(_).asInstanceOf[JObject]
+        ).map(json => {
+            implicit val formats = DefaultFormats
+            val id = (json \ "payment_id").extract[Long]
+            val time = (json \ "created_time").extract[String]
+            val message = (json \ "message").extract[String]
+            val actor_id = (json \ "actor" \ "id").extract[String]
+            val actor_name = (json \ "actor" \ "name").extract[String]
+            val target_id = (json \\ "target" \ "id").extract[String]
+            val target_name = (json \\ "target" \ "name").extract[String]
+            ActorTargetAdjacency(id, time, message, actor_id, actor_name, target_id, target_name)
+        })
+        //adjacencyRDD.print(2)
+
+        adjacencyRDD.foreachRDD{rdd =>
             if (rdd.toLocalIterator.nonEmpty) {
-                val sqlContext = SQLContextSingleton.getInstance(rdd.sparkContext)
-                import sqlContext.implicits._
-
-                val dataFrame = sqlContext.jsonRDD(rdd)
-                dataFrame.registerTempTable("payments")
-
-                val paymentRDD = sqlContext.sql("SELECT payment_id as id, created_time as time, message, actor.id as actor_id, actor.name as actor_name, transactions[0].target.id as target_id, transactions[0].target.name as target_name FROM payments")
-                paymentRDD.show(10)
-
-                val adjacency = paymentRDD.map{
-                    case Row(id: Long, time: String, message: String,
-                             actor_id: String, actor_name: String,
-                             target_id: String, target_name: String
-                         ) =>
-                            ActorTargetAdjacency(id, time, message, actor_id, actor_name, target_id, target_name)
-                    }
-                adjacency.saveToCassandra("moleads","adjacency",
+                rdd.saveToCassandra("moleads","adjacency",
                     SomeColumns("id", "time", "message", "actor_id", "actor_name", "target_id", "target_name")
                 )
-                adjacency.saveToEs("moleads/payment")
+                rdd.saveToEs("moleads/payment")
             }
         }
 
