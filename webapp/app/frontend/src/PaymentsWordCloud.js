@@ -2,6 +2,8 @@ import Immutable from 'immutable'
 import React from 'react'
 import {TagCloud} from 'react-tagcloud'
 
+import {Card, CardHeader, CardText} from 'material-ui/Card'
+
 
 class PaymentsWordCloud extends React.Component {
     static propTypes = {
@@ -24,14 +26,21 @@ class PaymentsWordCloud extends React.Component {
         }).valueSeq().toArray()
 
         return (
-            <div style={{width: 300}}>
-                <TagCloud
-                    minSize={12}
-                    maxSize={35}
-                    tags={cloudData}
-                    onClick={tag => console.log('clicking on tag:', tag)}
+            <Card initiallyExpanded={true} >
+                <CardHeader
+                    actAsExpander={true}
+                    showExpandableButton={true}
+                    title="Payments Word Cloud"
                 />
-            </div>
+                <CardText expandable={true} >
+                    <TagCloud
+                        minSize={12}
+                        maxSize={35}
+                        tags={cloudData}
+                        onClick={tag => console.log('clicking on tag:', tag)}
+                    />
+                </CardText>
+            </Card>
         )
     }
 }

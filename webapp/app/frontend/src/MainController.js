@@ -1,7 +1,7 @@
 import Immutable from 'immutable'
 import React from 'react'
 
-import AppBar from 'material-ui/AppBar';
+import AppBar from 'material-ui/AppBar'
 import PaymentsGraph from './PaymentsGraph'
 import PaymentsWordCloud from './PaymentsWordCloud'
 import TopUsersView from './TopUsersView'

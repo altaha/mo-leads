@@ -1,6 +1,7 @@
 import Immutable from 'immutable'
 import React from 'react'
 
+import {Card, CardHeader, CardMedia} from 'material-ui/Card'
 import Graph from './GraphVis'
 
 
@@ -40,7 +41,16 @@ class PaymentsGraph extends React.Component {
         }
 
         return (
-            <Graph graph={graphData} />
+            <Card initiallyExpanded={false} >
+                <CardHeader
+                    actAsExpander={true}
+                    showExpandableButton={true}
+                    title="Connections Graph"
+                />
+                <CardMedia expandable={true} >
+                    <Graph graph={graphData} />
+                </CardMedia>
+            </Card>
         )
     }
 }

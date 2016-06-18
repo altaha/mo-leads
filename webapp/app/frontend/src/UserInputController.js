@@ -3,7 +3,7 @@ import React from 'react'
 const vis = require('vis')
 const uuid = require('uuid')
 
-import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card'
+import {Card, CardHeader, CardText} from 'material-ui/Card'
 import DatePicker from 'material-ui/DatePicker'
 import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField'
