@@ -1,17 +1,27 @@
 import Immutable from 'immutable'
 import React from 'react'
 
+import AppBar from 'material-ui/AppBar';
 import PaymentsGraph from './PaymentsGraph'
 import PaymentsWordCloud from './PaymentsWordCloud'
 import TopUsersView from './TopUsersView'
 import UserInputController from './UserInputController'
 
+
+function dateRangeQueryParams(startDate, endDate) {
+    const startDateParam = startDate !== '' ? `&t1=${startDate}` : ''
+    const endDateParam = endDate !== '' ? `&t2=${endDate}` : ''
+    return `${startDateParam}${endDateParam}`
+}
+
 const REST_API = {
-    PAYMENTS_FOR_KEYWORD: (keyword) => `/api/payments/${keyword}`,
+    PAYMENTS_FOR_KEYWORD: (keyword, startDate, endDate) => {
+        const dateRangeQuery = dateRangeQueryParams(startDate, endDate)
+        return `/api/payments/${keyword}/?${dateRangeQuery}`
+    },
     ADJACENCY_LIST: (payerList, startDate, endDate) => {
-        const startDateParam = startDate !== '' ? `&t1=${startDate}` : ''
-        const endDateParam = endDate !== '' ? `&t2=${endDate}` : ''
-        return `/api/adjacency/?root=${payerList}${startDateParam}${endDateParam}`
+        const dateRangeQuery = dateRangeQueryParams(startDate, endDate)
+        return `/api/adjacency/?root=${payerList}${dateRangeQuery}`
     }
 }
 
@@ -31,7 +41,10 @@ class MainController extends React.Component {
     render() {
         return (
             <div>
-                <h1>Mo Leads App</h1>
+                <AppBar
+                    title="Venmo Leads"
+                    showMenuIconButton={false}
+                />
                 <UserInputController
                     onUpdateQueryWord={this.onUpdateQueryWord}
                 />
@@ -63,7 +76,11 @@ class MainController extends React.Component {
 
     fetchQueryWordPayments = () => {
         fetch(
-            REST_API.PAYMENTS_FOR_KEYWORD(this.state.queryWord)
+            REST_API.PAYMENTS_FOR_KEYWORD(
+                this.state.queryWord,
+                this.state.queryStartDate,
+                this.state.queryEndDate
+            )
         ).then((response) => {
             return response.json()
         }).then((paymentsJson) => {

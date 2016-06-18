@@ -54,7 +54,7 @@ def get_adjacency():
     return jsonify([x for x in response])
 
 
-@app.route('/api/payments/<keywords>')
+@app.route('/api/payments/<keywords>/')
 def get_elastic_search_messages(keywords):
     result = es.search(
         index='moleads',

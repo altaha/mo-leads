@@ -1,8 +1,13 @@
 import Immutable from 'immutable'
 import React from 'react'
-
 const vis = require('vis')
 const uuid = require('uuid')
+
+import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card'
+import DatePicker from 'material-ui/DatePicker'
+import RaisedButton from 'material-ui/RaisedButton'
+import TextField from 'material-ui/TextField'
+import Toggle from 'material-ui/Toggle'
 
 
 class UserInputController extends React.Component {
@@ -11,6 +16,8 @@ class UserInputController extends React.Component {
     }
 
     state = {
+        currentDate: new Date(),
+        expanded: false,
         queryKeywordValue: '',
         queryStartDate: '',
         queryEndDate: ''
@@ -18,29 +25,61 @@ class UserInputController extends React.Component {
 
     render() {
         return (
-            <div className="user-input-container">
-                <div>
-                    <input
+            <Card
+                expanded={this.state.expanded}
+                onExpandChange={this.handleExpandChange}
+            >
+                <CardHeader
+                    actAsExpander={true}
+                    showExpandableButton={true}
+                    title="How can I help you today?"
+                />
+                <CardText>
+                    <TextField
+                        hintText="Pizza"
+                        floatingLabelText="Enter search keyword"
                         onChange={this.onChangeQueryKeyword}
-                        placeholder="Pizza"
                     />
-                    <button
+                    <RaisedButton
+                        label="Submit"
                         onClick={this.onSubmitQueryKeyword}
-                    >
-                        Submit
-                    </button>
-                </div>
-                <br/>
-                <div>
-                    <input
+                        primary={true}
+                    />
+                    <br/>
+                    <Toggle
+                        label="Set date range"
+                        labelPosition="right"
+                        onToggle={this.handleExpandChange}
+                        toggled={this.state.expanded}
+                    />
+                </CardText>
+                <CardText
+                    expandable={true}
+                    style={{paddingTop: 0}}
+                >
+                    <DatePicker
+                        autoOk={true}
+                        disableYearSelection={false}
+                        floatingLabelText="Start date"
+                        maxDate={this.state.currentDate}
+                        mode="landscape"
                         onChange={this.onChangeStartDate}
                     />
-                    <input
+                    <DatePicker
+                        autoOk={true}
+                        disableYearSelection={false}
+                        floatingLabelText="End Date"
+                        maxDate={this.state.currentDate}
+                        mode="landscape"
                         onChange={this.onChangeEndDate}
                     />
-                </div>
-            </div>
+                </CardText>
+            </Card>
         )
+    }
+
+    handleExpandChange = () => {
+        this.setState({expanded: !this.state.expanded})
     }
 
     onChangeQueryKeyword = (event) => {
@@ -57,24 +96,16 @@ class UserInputController extends React.Component {
         )
     }
 
-    onChangeStartDate = (event) => {
+    onChangeStartDate = (event, date) => {
         this.setState({
-            queryStartDate: this.getDateISOString(event.target.value)
+            queryStartDate: date.toISOString()
         })
     }
 
-    onChangeEndDate = (event) => {
+    onChangeEndDate = (event, date) => {
         this.setState({
-            queryEndDate: this.getDateISOString(event.target.value)
+            queryEndDate: date.toISOString()
         })
-    }
-
-    getDateISOString(dateInput) {
-        const date = new Date(dateInput)
-        if (isNaN(date.getTime())) {
-            return ''
-        }
-        return date.toISOString()
     }
 }
 

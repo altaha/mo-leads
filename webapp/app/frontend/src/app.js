@@ -1,16 +1,29 @@
 import 'babel-polyfill'
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import injectTapEventPlugin from 'react-tap-event-plugin'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import React from 'react'
 import ReactDOM from 'react-dom'
 
 import MainController from './MainController'
 
 
+injectTapEventPlugin()
+
+const containerStyle = {
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    width: 600
+}
+
 export class App extends React.Component {
     render() {
         return (
-            <div className='app-container'>
-                <MainController />
-            </div>
+            <MuiThemeProvider muiTheme={getMuiTheme()} >
+                <div style={containerStyle} >
+                    <MainController />
+                </div>
+            </MuiThemeProvider>
         )
     }
 }
