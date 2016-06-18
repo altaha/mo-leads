@@ -45,7 +45,7 @@ def get_adjacency():
     t2 = request.args.get('t2')
     end_time_filter = 'AND time <= \'{}\''.format(t2) if t2 else ''
 
-    statement = 'SELECT * FROM adjacency WHERE actor_id IN ({0}) {1} {2};'.format(
+    statement = 'SELECT * FROM adjacency WHERE actor_id IN ({0}) {1} {2} limit 100;'.format(
         ','.join('\'{}\''.format(user) for user in root_users),
         start_time_filter,
         end_time_filter,

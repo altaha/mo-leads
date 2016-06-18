@@ -111,7 +111,7 @@ class MainController extends React.Component {
         }
 
         const topUsers = adjacencyList.countBy(
-            entry => entry.get('actor_id')
+            entry => entry.get('actor_name')
         ).sort().reverse()
         this.setState({
             queryWordTopUsers: topUsers
