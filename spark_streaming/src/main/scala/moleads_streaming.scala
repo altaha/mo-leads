@@ -1,4 +1,5 @@
 import kafka.serializer.StringDecoder
+import java.util.Date
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.kafka._
 import org.apache.spark.SparkConf
@@ -37,6 +38,7 @@ object MoLeadsStreaming {
         val kafkaParams = Map[String, String]("metadata.broker.list" -> kafkaBroker)
         val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topicsSet).map(_._2)
 
+        // parse the json records
         val adjacencyRDD = messages.map(
             JsonMethods.parse(_).asInstanceOf[JObject]
         ).map(json => {
@@ -52,6 +54,7 @@ object MoLeadsStreaming {
         })
         //adjacencyRDD.print(2)
 
+        // save to Cassandra and ElasticSearch
         adjacencyRDD.foreachRDD{rdd =>
             if (rdd.toLocalIterator.nonEmpty) {
                 rdd.saveToCassandra("moleads","adjacency",
@@ -60,6 +63,22 @@ object MoLeadsStreaming {
                 rdd.saveToEs("moleads/payment")
             }
         }
+
+        // get micro batch word counts and save to Cassandra
+        val words = adjacencyRDD.map(_.message).flatMap(
+            _.replaceAll("[^a-zA-Z]", " ").split(" ")
+        ).map(_.trim).filter(_.length > 2).map(_.toLowerCase)
+        val pairs = words.map(word => (word, 1))
+        val wordCounts = pairs.reduceByKey(_ + _)
+        wordCounts.foreachRDD{ (rdd, time) =>
+            val timeDate = new Date(time.milliseconds)
+            rdd.map(
+                wordCountPair => (Seq(wordCountPair).toMap, "seconds", timeDate)
+            ).saveToCassandra("moleads", "word_counts",
+                SomeColumns("word_count" append, "period", "time")
+            )
+        }
+        //wordCounts.print()
 
         // Start the stream computation
         ssc.start()
