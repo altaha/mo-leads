@@ -3,6 +3,9 @@
 curl -XPUT 'http://localhost:9200/moleads' -d '
 {"mappings": {
     "payment" : {
+        "_all": {
+            "enabled": false
+        },
         "dynamic" : "strict",
         "properties" : {
             "id" : {
@@ -37,3 +40,17 @@ curl -XPUT 'http://localhost:9200/moleads' -d '
     }
  }
 }'
+
+curl -XPUT 'localhost:9200/moleads/_settings' -d '{"index" : {"refresh_interval" : "2s"} }'
+
+/Optimizations for heavy indexing (see https://www.elastic.co/blog/performance-considerations-elasticsearch-indexing)
+- Need to set:
+-- index.store.throttle.type to none
+-- disable _all field in mappings (added to mapping setup)
+-- Increase indices.memory.index_buffer_size from 10% (try 30%)
+-- increase index.refresh_interval to 30s (-1 disables it entirely. Currently set to 2s).
+-- increase index.translog.flush_threshold_size to 1GB (from 200MB)
+
+## Index Stats
+curl 'http://localhost:9200/moleads/_stats?level=shards'
+- look for: indices.segments.index_writer_max_memory

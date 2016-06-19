@@ -1,0 +1,1 @@
+/usr/local/spark/bin/spark-submit --class MoLeadsStreaming --master spark://ip-172-31-0-13:7077 --driver-memory 6000M --executor-memory 6000M --jars target/scala-2.10/mo_leads-assembly-1.0.jar target/scala-2.10/mo_leads_2.10-1.0.jar
