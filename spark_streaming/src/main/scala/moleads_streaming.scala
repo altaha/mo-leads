@@ -43,15 +43,15 @@ object MoLeadsStreaming {
             JsonMethods.parse(_).asInstanceOf[JObject]
         ).map(json => {
             implicit val formats = DefaultFormats
-            val id = (json \ "payment_id").extract[Long]
-            val time = (json \ "created_time").extract[String]
-            val message = (json \ "message").extract[String]
-            val actor_id = (json \ "actor" \ "id").extract[String]
-            val actor_name = (json \ "actor" \ "name").extract[String]
-            val target_id = (json \\ "target" \ "id").extract[String]
-            val target_name = (json \\ "target" \ "name").extract[String]
+            val id = (json \ "payment_id").extractOpt[Long].getOrElse(0L)
+            val time = (json \ "created_time").extractOpt[String].getOrElse("")
+            val message = (json \ "message").extractOpt[String].getOrElse("")
+            val actor_id = (json \ "actor" \ "id").extractOpt[String].getOrElse("")
+            val actor_name = (json \ "actor" \ "name").extractOpt[String].getOrElse("")
+            val target_id = (json \\ "target" \ "id").extractOpt[String].getOrElse("")
+            val target_name = (json \\ "target" \ "name").extractOpt[String].getOrElse("")
             ActorTargetAdjacency(id, time, message, actor_id, actor_name, target_id, target_name)
-        })
+        }).filter(_.isValid)
         //adjacencyRDD.print(2)
 
         // save to Cassandra and ElasticSearch
@@ -89,7 +89,11 @@ object MoLeadsStreaming {
 
 case class ActorTargetAdjacency(
     id: Long, time: String, message: String, actor_id: String, actor_name: String, target_id: String, target_name: String
-)
+) {
+    def isValid = {
+        id != 0L && time != "" && message != "" && actor_id != "" && target_id != ""
+    }
+}
 
 
 /** Lazily instantiated singleton instance of SQLContext */
