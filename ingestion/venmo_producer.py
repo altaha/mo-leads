@@ -56,11 +56,18 @@ class KafkaWriter(object):
             value=value,
         )
 
+    def write_file(self, kafka_topic, file_name):
+        with open(file_name, 'r') as reader:
+            for line in reader:
+                self.write(kafka_topic, line)
+        self.producer.flush()
+
 
 VENMO_BUCKET='venmo-json'
 KAFKA_SERVER='localhost'
 KAFKA_TOPIC='venmo-data'
 NUM_RECORDS=10000
+FILES_LIST_FILE = 'files_list.txt'
 
 
 if __name__ == "__main__":
@@ -71,9 +78,28 @@ if __name__ == "__main__":
         reader = S3BucketReader(VENMO_BUCKET)
         for line in reader.lines(NUM_RECORDS):
             kafka_writer.write(KAFKA_TOPIC, line)
+    elif source == 'dump':
+        num_producers = 1
+        producer_id = 0
+        if len(args) > 3:
+            num_producers = int(str(args[2]))
+            producer_id = int(str(args[3])) - 1
+            print 'producer {} out of {} producers'.format(
+                producer_id,
+                num_producers,
+            )
+
+        files_list = []
+        with open(FILES_LIST_FILE, 'r') as files_list_file:
+            for file_name in files_list_file:
+                files_list.append(file_name[:-1])
+
+        print '{} files'.format(len(files_list))
+        for i in xrange(producer_id, len(files_list), num_producers):
+            print 'sending file {} to Kafka'.format(i)
+            file_name = files_list[i]
+            kafka_writer.write_file(KAFKA_TOPIC, file_name)
     else:
         file_name = str(args[2])
-        with open(file_name, 'r') as reader:
-            for line in reader:
-                kafka_writer.write(KAFKA_TOPIC, line)
+        kafka_writer.write_file(KAFKA_TOPIC, file_name)
     kafka_writer.producer.flush()
