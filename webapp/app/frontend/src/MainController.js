@@ -15,13 +15,14 @@ function dateRangeQueryParams(startDate, endDate) {
 }
 
 const REST_API = {
-    PAYMENTS_FOR_KEYWORD: (keyword, startDate, endDate) => {
-        const dateRangeQuery = dateRangeQueryParams(startDate, endDate)
-        return `/api/payments/${keyword}/?${dateRangeQuery}`
-    },
     ADJACENCY_LIST: (payerList, startDate, endDate) => {
         const dateRangeQuery = dateRangeQueryParams(startDate, endDate)
         return `/api/adjacency/?root=${payerList}${dateRangeQuery}`
+    },
+    LATEST_WORD_COUNT: () => `/api/word_count/latest/`,
+    PAYMENTS_FOR_KEYWORD: (keyword, startDate, endDate) => {
+        const dateRangeQuery = dateRangeQueryParams(startDate, endDate)
+        return `/api/payments/${keyword}/?${dateRangeQuery}`
     }
 }
 
@@ -30,12 +31,20 @@ class MainController extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            hasQueryWord: false,
+            latestWordCount: new Immutable.Map(),
             queryWord: '',
             queryWordAdjacency: new Immutable.List(),
             queryWordPayments: new Immutable.List(),
             queryWordTopUsers: new Immutable.List()
         }
+    }
+
+    componentWillMount() {
+        this.fetchLatestWordCount()
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.timer)
     }
 
     render() {
@@ -50,6 +59,8 @@ class MainController extends React.Component {
                 />
                 <PaymentsWordCloud
                     payments={this.state.queryWordPayments}
+                    queryWord={this.state.queryWord}
+                    wordCount={this.state.latestWordCount}
                 />
                 <TopUsersView
                     topUsers={this.state.queryWordTopUsers}
@@ -61,10 +72,25 @@ class MainController extends React.Component {
         )
     }
 
+    fetchLatestWordCount = () => {
+        if (this.state.queryWord === '') {
+            fetch(
+                REST_API.LATEST_WORD_COUNT()
+            ).then((response) => {
+                return response.json()
+            }).then((wordCounts) => {
+                this.setState({
+                    latestWordCount: new Immutable.Map(wordCounts)
+                })
+            }).catch((ex) => {
+                console.error('fetch failed', ex)
+            })
+        }
+        this.timer = setTimeout(this.fetchLatestWordCount, 2000)
+    }
+
     onUpdateQueryWord = (queryWord, queryStartDate, queryEndDate) => {
-        const hasQueryWord = queryWord === ''
         this.setState({
-            hasQueryWord,
             queryWord,
             queryStartDate,
             queryEndDate,

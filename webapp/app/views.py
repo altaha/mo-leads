@@ -29,13 +29,6 @@ def get_messages():
     return jsonify(messages=json_response)
 
 
-@app.route('/api/message/<id>')
-def get_message(id):
-    statement = 'SELECT * FROM messages WHERE id={}'.format(id)
-    response = session.execute(statement)
-    json_response = [{'id': x.id, 'message': x.message} for x in response]
-    return jsonify(messages=json_response)
-
 
 @app.route('/api/adjacency/')
 def get_adjacency():
@@ -52,6 +45,17 @@ def get_adjacency():
     )
     response = session.execute(statement)
     return jsonify([x for x in response])
+
+
+@app.route('/api/word_count/latest/')
+def get_word_count():
+    statement = 'select word_count from word_counts where period = \'seconds\' ORDER BY time DESC limit 5;'
+    response = session.execute(statement)
+    result = dict()
+    for row in response:
+        row_dict = dict(row.word_count)
+        result.update(row_dict)
+    return jsonify(result)
 
 
 @app.route('/api/payments/<keywords>/')
