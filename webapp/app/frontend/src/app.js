@@ -1,4 +1,5 @@
 import 'babel-polyfill'
+import Promise from 'bluebird'
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import injectTapEventPlugin from 'react-tap-event-plugin'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
@@ -7,8 +8,8 @@ import ReactDOM from 'react-dom'
 
 import MainController from './MainController'
 
-
 injectTapEventPlugin()
+window.Promise = Promise
 
 const containerStyle = {
     marginLeft: 'auto',
