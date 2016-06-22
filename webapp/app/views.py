@@ -47,6 +47,34 @@ def get_adjacency():
     return jsonify([x for x in response])
 
 
+@app.route('/api/adjacency/<user_id>/')
+def get_adjacency_for_user(user_id):
+    t1 = request.args.get('t1')
+    start_time_filter = 'AND time >= \'{}\''.format(t1) if t1 else ''
+    t2 = request.args.get('t2')
+    end_time_filter = 'AND time <= \'{}\''.format(t2) if t2 else ''
+
+    statement = 'SELECT * FROM adjacency WHERE actor_id = \'{0}\' {1} {2} limit 100;'.format(
+        user_id,
+        start_time_filter,
+        end_time_filter,
+    )
+    response = session.execute(statement)
+    first_degree = [x for x in response]
+
+    first_degree_connections = (
+        '\'{}\''.format(user.target_id) for user in first_degree if user.target_id != user_id
+    )
+    statement = 'SELECT * FROM adjacency WHERE actor_id IN ({0}) {1} {2} limit 100;'.format(
+        ','.join(first_degree_connections),
+        start_time_filter,
+        end_time_filter,
+    )
+    response = session.execute(statement)
+    second_degree = [x for x in response]
+    return jsonify(first_degree + second_degree)
+
+
 @app.route('/api/word_count/latest/')
 def get_word_count():
     statement = 'select word_count from word_counts where period = \'seconds\' ORDER BY time DESC limit 5;'

@@ -23,6 +23,10 @@ const REST_API = {
     PAYMENTS_FOR_KEYWORD: (keyword, startDate, endDate) => {
         const dateRangeQuery = dateRangeQueryParams(startDate, endDate)
         return `/api/payments/${keyword}/?${dateRangeQuery}`
+    },
+    USER_ADJACENCY_LIST: (userId, startDate, endDate) => {
+        const dateRangeQuery = dateRangeQueryParams(startDate, endDate)
+        return `/api/adjacency/${userId}/?${dateRangeQuery}`
     }
 }
 
@@ -38,6 +42,7 @@ class MainController extends React.Component {
             queryWordAdjacency: new Immutable.List(),
             queryWordPayments: new Immutable.List(),
             queryWordTopUsers: new Immutable.List(),
+            selectedUserAdjacency: new Immutable.List(),
             showGraph: false
         }
     }
@@ -51,6 +56,9 @@ class MainController extends React.Component {
     }
 
     render() {
+        const adjacencyList = this.state.selectedUserAdjacency.count() > 0 ?
+            this.state.selectedUserAdjacency : this.state.queryWordAdjacency
+
         return (
             <div>
                 <AppBar
@@ -73,10 +81,11 @@ class MainController extends React.Component {
                     wordCount={this.state.latestWordCount}
                 />
                 <TopUsersView
+                    onClickUser={this.onClickUser}
                     topUsers={this.state.queryWordTopUsers}
                 />
                 <PaymentsGraph
-                    adjacencyList={this.state.queryWordAdjacency}
+                    adjacencyList={adjacencyList}
                     showGraph={this.state.showGraph}
                     toggleShowGraph={this.toggleShowGraph}
                 />
@@ -118,6 +127,7 @@ class MainController extends React.Component {
             queryWordAdjacency: new Immutable.List(),
             queryWordPayments: new Immutable.List(),
             queryWordTopUsers: new Immutable.List(),
+            selectedUserAdjacency: new Immutable.List(),
             showGraph: false
         }, this.fetchQueryWordPayments)
     }
@@ -198,6 +208,32 @@ class MainController extends React.Component {
         ).sort().reverse()
         this.setState({
             queryWordTopUsers: topUsers
+        })
+    }
+
+    onClickUser = (userName) => {
+        const user = this.state.queryWordAdjacency.find(
+            userEntry => userEntry.get('actor_name') === userName
+        )
+        this.fetchUserAdjacency(user.get('actor_id'))
+    }
+
+    fetchUserAdjacency = (userId) => {
+        fetch(
+            REST_API.USER_ADJACENCY_LIST(
+                userId,
+                this.state.queryStartDate,
+                this.state.queryEndDate
+            )
+        ).then((response) => {
+            return response.json()
+        }).then((adjacencyList) => {
+            this.setState({
+                selectedUserAdjacency: Immutable.fromJS(adjacencyList),
+                showGraph: true
+            })
+        }).catch((ex) => {
+            console.error('fetch failed', ex)
         })
     }
 }

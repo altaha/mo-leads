@@ -24,6 +24,7 @@ const dummyImagesList = new Immutable.List([
 
 class TopUsersView extends React.Component {
     static propTypes = {
+        onClickUser: React.PropTypes.func.isRequired,
         topUsers: React.PropTypes.object.isRequired
     }
 
@@ -43,6 +44,7 @@ class TopUsersView extends React.Component {
                 <ListItem
                     key={user}
                     leftAvatar={<Avatar src={avatarImageSrc} />}
+                    onClick={this.onClickUser.bind(this, user)}
                     primaryText={user}
                     secondaryText={`${count} payments`}
                 />
@@ -67,6 +69,10 @@ class TopUsersView extends React.Component {
                 </CardText>
             </Card>
         )
+    }
+
+    onClickUser = (user) => {
+        this.props.onClickUser(user)
     }
 }
 
