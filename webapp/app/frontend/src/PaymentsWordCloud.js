@@ -1,6 +1,6 @@
 import Immutable from 'immutable'
-import {shouldComponentUpdate} from 'react-immutable-render-mixin'
 import React from 'react'
+import {shouldComponentUpdate} from 'react-immutable-render-mixin'
 import {TagCloud} from 'react-tagcloud'
 
 import {Card, CardHeader, CardText} from 'material-ui/Card'
@@ -8,9 +8,14 @@ import {Card, CardHeader, CardText} from 'material-ui/Card'
 
 class PaymentsWordCloud extends React.Component {
     static propTypes = {
+        onClickCloudWord: React.PropTypes.func,
         payments: React.PropTypes.object.isRequired,
         queryWord: React.PropTypes.string.isRequired,
         wordCount: React.PropTypes.object.isRequired,
+    }
+
+    static defaultProps = {
+        onClickCloudWord: () => {}
     }
 
     shouldComponentUpdate = shouldComponentUpdate
@@ -37,7 +42,7 @@ class PaymentsWordCloud extends React.Component {
                         minSize={12}
                         maxSize={35}
                         tags={cloudData}
-                        onClick={tag => console.log('clicking on tag:', tag)}
+                        onClick={this.onClickCloudTag}
                     />
                 </CardText>
             </Card>
@@ -58,6 +63,11 @@ class PaymentsWordCloud extends React.Component {
         return cloudWordCount.map((count, token) => {
             return {value: token, count}
         }).valueSeq().take(100).toArray()
+    }
+
+    onClickCloudTag = (tag) => {
+        const word = tag.value
+        this.props.onClickCloudWord(word)
     }
 }
 

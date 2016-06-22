@@ -32,10 +32,13 @@ class MainController extends React.Component {
         super(props)
         this.state = {
             latestWordCount: new Immutable.Map(),
+            queryEndDate: '',
+            queryStartDate: '',
             queryWord: '',
             queryWordAdjacency: new Immutable.List(),
             queryWordPayments: new Immutable.List(),
-            queryWordTopUsers: new Immutable.List()
+            queryWordTopUsers: new Immutable.List(),
+            showGraph: false
         }
     }
 
@@ -55,9 +58,16 @@ class MainController extends React.Component {
                     showMenuIconButton={false}
                 />
                 <UserInputController
+                    onSubmitQuery={this.onSubmitQuery}
+                    onUpdateQueryEndDate={this.onUpdateQueryEndDate}
+                    onUpdateQueryStartDate={this.onUpdateQueryStartDate}
                     onUpdateQueryWord={this.onUpdateQueryWord}
+                    queryEndDate={this.state.queryEndDate}
+                    queryStartDate={this.state.queryStartDate}
+                    queryWord={this.state.queryWord}
                 />
                 <PaymentsWordCloud
+                    onClickCloudWord={this.addQueryWord}
                     payments={this.state.queryWordPayments}
                     queryWord={this.state.queryWord}
                     wordCount={this.state.latestWordCount}
@@ -67,6 +77,8 @@ class MainController extends React.Component {
                 />
                 <PaymentsGraph
                     adjacencyList={this.state.queryWordAdjacency}
+                    showGraph={this.state.showGraph}
+                    toggleShowGraph={this.toggleShowGraph}
                 />
             </div>
         )
@@ -89,18 +101,42 @@ class MainController extends React.Component {
         this.timer = setTimeout(this.fetchLatestWordCount, 2000)
     }
 
-    onUpdateQueryWord = (queryWord, queryStartDate, queryEndDate) => {
+    onUpdateQueryWord = (queryWord) => {
+        this.setState({queryWord}, this.onSubmitQuery)
+    }
+
+    onUpdateQueryStartDate = (queryStartDate) => {
+        this.setState({queryStartDate}, this.onSubmitQuery)
+    }
+
+    onUpdateQueryEndDate = (queryEndDate) => {
+        this.setState({queryEndDate}, this.onSubmitQuery)
+    }
+
+    onSubmitQuery = () => {
         this.setState({
-            queryWord,
-            queryStartDate,
-            queryEndDate,
             queryWordAdjacency: new Immutable.List(),
             queryWordPayments: new Immutable.List(),
-            queryWordTopUsers: new Immutable.List()
+            queryWordTopUsers: new Immutable.List(),
+            showGraph: false
         }, this.fetchQueryWordPayments)
     }
 
+    addQueryWord = (wordToAdd) => {
+        if (this.state.queryWord.indexOf(wordToAdd) !== -1) {
+            return
+        }
+
+        const newQueryWord = `${this.state.queryWord} ${wordToAdd}`
+        this.setState({
+            queryWord: newQueryWord
+        }, this.onSubmitQuery)
+    }
+
     fetchQueryWordPayments = () => {
+        if (this.state.queryWord === '') {
+            return
+        }
         fetch(
             REST_API.PAYMENTS_FOR_KEYWORD(
                 this.state.queryWord,
@@ -145,6 +181,10 @@ class MainController extends React.Component {
         }).catch((ex) => {
             console.error('fetch failed', ex)
         })
+    }
+
+    toggleShowGraph = (showGraph) => {
+        this.setState({showGraph})
     }
 
     getQueryWordTopUsers = () => {

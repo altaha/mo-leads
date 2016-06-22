@@ -7,7 +7,9 @@ import Graph from './GraphVis'
 
 class PaymentsGraph extends React.Component {
     static propTypes = {
-        adjacencyList: React.PropTypes.object.isRequired
+        adjacencyList: React.PropTypes.object.isRequired,
+        showGraph: React.PropTypes.bool.isRequired,
+        toggleShowGraph: React.PropTypes.func.isRequired
     }
 
     render() {
@@ -41,7 +43,10 @@ class PaymentsGraph extends React.Component {
         }
 
         return (
-            <Card initiallyExpanded={false} >
+            <Card
+                expanded={this.props.showGraph}
+                onExpandChange={this.props.toggleShowGraph}
+            >
                 <CardHeader
                     actAsExpander={true}
                     showExpandableButton={true}
