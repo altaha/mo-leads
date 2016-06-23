@@ -3,9 +3,9 @@ import React from 'react'
 
 import AppBar from 'material-ui/AppBar'
 import PaymentsGraph from './PaymentsGraph'
-import PaymentsWordCloud from './PaymentsWordCloud'
 import TopUsersView from './TopUsersView'
 import UserInputController from './UserInputController'
+import WordCloudController from './WordCloudController'
 
 
 function dateRangeQueryParams(startDate, endDate) {
@@ -22,7 +22,7 @@ const REST_API = {
     LATEST_WORD_COUNT: () => `/api/word_count/latest/`,
     PAYMENTS_FOR_KEYWORD: (keyword, startDate, endDate) => {
         const dateRangeQuery = dateRangeQueryParams(startDate, endDate)
-        return `/api/payments/${keyword}/?${dateRangeQuery}`
+        return `/api/payments/${keyword}/?significant&${dateRangeQuery}`
     },
     USER_ADJACENCY_LIST: (userId, startDate, endDate) => {
         const dateRangeQuery = dateRangeQueryParams(startDate, endDate)
@@ -43,7 +43,8 @@ class MainController extends React.Component {
             queryWordPayments: new Immutable.List(),
             queryWordTopUsers: new Immutable.List(),
             selectedUserAdjacency: new Immutable.List(),
-            showGraph: false
+            showGraph: false,
+            significantTermsCount: new Immutable.Map()
         }
     }
 
@@ -74,11 +75,12 @@ class MainController extends React.Component {
                     queryStartDate={this.state.queryStartDate}
                     queryWord={this.state.queryWord}
                 />
-                <PaymentsWordCloud
+                <WordCloudController
+                    hasQueryWord={this.hasQueryWord()}
+                    latestWordCount={this.state.latestWordCount}
                     onClickCloudWord={this.addQueryWord}
-                    payments={this.state.queryWordPayments}
                     queryWord={this.state.queryWord}
-                    wordCount={this.state.latestWordCount}
+                    significantWordCount={this.state.significantTermsCount}
                 />
                 <TopUsersView
                     onClickUser={this.onClickUser}
@@ -93,8 +95,12 @@ class MainController extends React.Component {
         )
     }
 
+    hasQueryWord() {
+        return this.state.queryWord !== ''
+    }
+
     fetchLatestWordCount = () => {
-        if (this.state.queryWord === '') {
+        if (!this.hasQueryWord()) {
             fetch(
                 REST_API.LATEST_WORD_COUNT()
             ).then((response) => {
@@ -128,7 +134,8 @@ class MainController extends React.Component {
             queryWordPayments: new Immutable.List(),
             queryWordTopUsers: new Immutable.List(),
             selectedUserAdjacency: new Immutable.List(),
-            showGraph: false
+            showGraph: false,
+            significantTermsCount: new Immutable.Map()
         }, this.fetchQueryWordPayments)
     }
 
@@ -144,7 +151,7 @@ class MainController extends React.Component {
     }
 
     fetchQueryWordPayments = () => {
-        if (this.state.queryWord === '') {
+        if (!this.hasQueryWord()) {
             return
         }
         fetch(
@@ -162,6 +169,20 @@ class MainController extends React.Component {
             this.setState({
                 queryWordPayments: Immutable.fromJS(payments)
             }, this.fetchPaymentsAdjacency)
+
+            const significantList = paymentsJson.significant
+            if (!significantList ||!significantList.length) {
+                return
+            }
+            const normalizer = significantList[significantList.length - 1].score
+            const significantTerms = significantList.reduce((wordCount, entry) => {
+                const word = entry.key
+                const count = Math.round(entry.score / normalizer)
+                return wordCount.set(word, count)
+            }, new Immutable.Map())
+            this.setState({
+                significantTermsCount: significantTerms
+            })
         }).catch((ex) => {
             console.error('fetch failed', ex)
         })

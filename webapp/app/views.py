@@ -88,12 +88,33 @@ def get_word_count():
 
 @app.route('/api/payments/<keywords>/')
 def get_elastic_search_messages(keywords):
+    get_significant_terms = 'significant' in request.args
+
+    query_body = {
+        'from': 0, 'size': 100,
+        'query': {'match': {'message': keywords}}
+    }
+    significant_terms_query = {
+        'aggs': {
+            'most_sig': {
+                'significant_terms': {
+                    'field': 'message',
+                    'size': 10
+                }
+            }
+        }
+    }
+    if get_significant_terms:
+        query_body.update(significant_terms_query)
+
     result = es.search(
         index='moleads',
         doc_type='payment',
-        body={
-            'from': 0, 'size': 100,
-            'query': {'match': {'message': keywords}}
-        },
+        body=query_body,
     )
-    return jsonify(payments=result['hits']['hits'])
+    output = {
+        'payments': result['hits']['hits']
+    }
+    if get_significant_terms:
+        output['significant'] = result['aggregations']['most_sig']['buckets']
+    return jsonify(output)
