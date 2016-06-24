@@ -31,6 +31,11 @@ object MoLeadsStreaming {
                  .set("spark.cassandra.connection.host", cassandraHost)
 
         val ssc = new StreamingContext(sparkConf, Seconds(2))
+        val sparkContext = ssc.sparkContext
+
+        // Get stop words list and create broadcast variable
+        val stopWords = getStopWordsSet();
+        val broadcastStopWords = sparkContext.broadcast(stopWords)
 
         // Create direct kafka stream with brokers and topics
         val topicsSet = kafkaTopics.split(",").toSet
@@ -67,9 +72,11 @@ object MoLeadsStreaming {
         // get micro batch word counts and save to Cassandra
         val words = adjacencyDStream.map(_.message).flatMap(
             _.replaceAll("[^a-zA-Z]", " ").split(" ")
-        ).map(_.trim).filter(_.length > 2).map(_.toLowerCase)
+        ).map(_.trim).filter(_.length > 2).map(_.toLowerCase).filter(
+            !broadcastStopWords.value.contains(_)
+        )
         val pairs = words.map(word => (word, 1))
-        val wordCounts = pairs.reduceByKey(_ + _)
+        val wordCounts = pairs.reduceByKey(_ + _).filter(_._2 > 2)
         wordCounts.foreachRDD{ (rdd, time) =>
             val timeDate = new Date(time.milliseconds)
             rdd.map(
@@ -83,6 +90,11 @@ object MoLeadsStreaming {
         // Start the stream computation
         ssc.start()
         ssc.awaitTermination()
+    }
+
+
+    def getStopWordsSet() : Set[String] = {
+        Set("a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "cant", "cannot", "could", "couldnt", "did", "didnt", "do", "does", "doesnt", "doing", "dont", "down", "during", "each", "few", "for", "from", "further", "had", "hadnt", "has", "hasnt", "have", "havent", "having", "he", "hed", "hell", "hes", "her", "here", "heres", "hers", "herself", "him", "himself", "his", "how", "hows", "i", "id", "ill", "im", "ive", "if", "in", "into", "is", "isnt", "it", "its", "its", "itself", "let's", "me", "more", "most", "mustnt", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "shant", "she", "shed", "shell", "shes", "should", "shouldnt", "so", "some", "such", "than", "that", "thats", "the", "their", "theirs", "them", "themselves", "then", "there", "theres", "these", "they", "this", "those", "through", "to", "too", "under", "until", "up", "very", "was", "wasnt", "we", "were", "werent", "what", "when", "where", "which", "while", "who", "whom", "why", "with", "wont", "would", "wouldnt", "you", "youd", "your", "yours", "yourself", "yourselves")
     }
 }
 

@@ -113,7 +113,7 @@ class MainController extends React.Component {
                 console.error('fetch failed', ex)
             })
         }
-        this.timer = setTimeout(this.fetchLatestWordCount, 2000)
+        this.timer = setTimeout(this.fetchLatestWordCount, 4000)
     }
 
     onUpdateQueryWord = (queryWord) => {
