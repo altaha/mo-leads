@@ -24,6 +24,8 @@ class UserInputController extends React.Component {
 
     state = {
         currentDate: new Date(),
+        defaultStartDate: new Date("2014-12-01"),
+        defaultEndDate: new Date("2014-12-31"),
         expanded: false
     }
 
@@ -31,9 +33,9 @@ class UserInputController extends React.Component {
 
     render() {
         const queryStartDate = this.props.queryStartDate === '' ?
-            null : new Date(this.props.queryStartDate)
+            this.state.defaultStartDate : new Date(this.props.queryStartDate)
         const queryEndDate = this.props.queryEndDate === '' ?
-            null : new Date(this.props.queryEndDate)
+            this.state.defaultEndDate : new Date(this.props.queryEndDate)
 
         return (
             <Card
@@ -41,8 +43,8 @@ class UserInputController extends React.Component {
                 onExpandChange={this.handleExpandChange}
             >
                 <CardHeader
-                    actAsExpander={true}
-                    showExpandableButton={true}
+                    actAsExpander={false}
+                    showExpandableButton={false}
                     title="How can I help you today?"
                 />
                 <CardText>
@@ -93,7 +95,16 @@ class UserInputController extends React.Component {
     }
 
     handleExpandChange = () => {
-        this.setState({expanded: !this.state.expanded})
+        const expanded = !this.state.expanded
+        this.setState({expanded})
+
+        const startDateString = expanded ?
+            this.state.defaultStartDate.toISOString() : ''
+        const endDateString = expanded ?
+            this.state.defaultEndDate.toISOString() : ''
+
+        this.props.onUpdateQueryStartDate(startDateString)
+        this.props.onUpdateQueryEndDate(endDateString)
     }
 
     onSubmitQuery = () => {
