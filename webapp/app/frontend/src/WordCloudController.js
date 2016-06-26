@@ -12,6 +12,8 @@ class WordCloudController extends React.Component {
         latestWordCount: React.PropTypes.object.isRequired,
         onClickCloudWord: React.PropTypes.func,
         queryWord: React.PropTypes.string.isRequired,
+        selectedUserAdjacency: React.PropTypes.object.isRequired,
+        selectedUserName: React.PropTypes.string.isRequired,
         significantWordCount: React.PropTypes.object.isRequired
     }
 
@@ -48,9 +50,13 @@ class WordCloudController extends React.Component {
     }
 
     getHeaderTitle() {
-        return this.props.hasQueryWord ?
-            `Signifcant words related to "${this.props.queryWord}"` :
-            'Word cloud from latest payments'
+        if (!this.props.hasQueryWord) {
+            return 'Word cloud from latest payments'
+        } else if (this.props.selectedUserName === '') {
+            return `Signifcant words related to "${this.props.queryWord}"`
+        } else {
+            return `Word cloud among the connections of ${this.props.selectedUserName}`
+        }
     }
 
     getWordCloud() {
@@ -66,12 +72,33 @@ class WordCloudController extends React.Component {
     }
 
     getCloudData() {
-        const cloudWordCount = this.props.hasQueryWord ?
-            this.props.significantWordCount : this.props.latestWordCount
-
+        const cloudWordCount = this.getCloudWordCounts()
         return cloudWordCount.sort().reverse().map((count, token) => {
             return {value: token, count}
         }).valueSeq().take(100).toArray()
+    }
+
+    getCloudWordCounts() {
+        if (!this.props.hasQueryWord) {
+            return this.props.latestWordCount
+        }
+
+        if (this.props.selectedUserName === '') {
+            return this.props.significantWordCount
+        }
+
+        return this.props.selectedUserAdjacency.flatMap(
+            payment => {
+                const message = payment.get('message')
+                const tokens = message.toLowerCase().split(' ')
+                return new Immutable.List(tokens)
+            }).map(
+                token => token.replace(/[^a-z]+/g, '')
+            ).filter(
+                token => token.length > 2
+            ).filterNot(
+                token => token === 'for' || token === "and" || token === "the" || token === "you"
+            ).countBy(token => token)
     }
 
     onClickCloudTag = (tag) => {

@@ -80,6 +80,7 @@ class MainController extends React.Component {
                     onClickCloudWord={this.addQueryWord}
                     queryWord={this.state.queryWord}
                     selectedUserAdjacency={this.state.selectedUserAdjacency}
+                    selectedUserName={this.state.selectedUserName}
                     significantWordCount={this.state.significantTermsCount}
                 />
                 <TopUsersView
