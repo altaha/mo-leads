@@ -62,7 +62,7 @@ class TopUsersView extends React.Component {
                 <CardHeader
                     actAsExpander={true}
                     showExpandableButton={true}
-                    title="Top Leads"
+                    title="Most active leads"
                 />
                 <CardText expandable={true} >
                     {topUsersList}

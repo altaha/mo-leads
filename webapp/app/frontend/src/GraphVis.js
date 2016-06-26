@@ -9,7 +9,7 @@ class Graph extends React.Component {
 
     static propTypes = {
         graph: React.PropTypes.object,
-        identified: React.PropTypes.string,
+        identifier: React.PropTypes.string,
         onClickEdge: React.PropTypes.func,
         onClickNode: React.PropTypes.func,
         style: React.PropTypes.object
@@ -24,7 +24,7 @@ class Graph extends React.Component {
     }
 
     state = {
-        hierarchicalLayout: false
+        enablePhysics: false
     }
 
     componentDidMount() {
@@ -35,8 +35,9 @@ class Graph extends React.Component {
         this.updateGraph()
     }
 
-    changeMode(event) {
-        this.updateGraph()
+    changeMode = () => {
+        const enablePhysics = !this.state.enablePhysics
+        this.setState({enablePhysics})
     }
 
     updateGraph() {
@@ -57,21 +58,13 @@ class Graph extends React.Component {
             interaction: {
                 dragNodes: true
             },
+            layout: {
+                hierarchical: false
+            },
             physics: {
-                enabled: true,
+                enabled: this.state.enablePhysics,
                 stabilization: true
             }
-        }
-
-        if (this.state.hierarchicalLayout) {
-            options.layout = {hierarchical: {
-                enabled: true,
-                direction: 'UD',
-                levelSeparation: 100,
-                nodeSpacing: 1
-            }}
-        } else {
-            options.layout = {hierarchical: false}
         }
 
         this.network = new vis.Network(container, this.props.graph, options)
@@ -87,7 +80,7 @@ class Graph extends React.Component {
     render() {
         return React.createElement(
             'div',
-            {onDoubleClick: this.changeMode.bind(this), id: this.props.identifier, style: this.props.style},
+            {onDoubleClick: this.changeMode, id: this.props.identifier, style: this.props.style},
             this.props.identifier
         )
     }
