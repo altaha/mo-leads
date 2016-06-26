@@ -8,6 +8,7 @@ import Graph from './GraphVis'
 class PaymentsGraph extends React.Component {
     static propTypes = {
         adjacencyList: React.PropTypes.object.isRequired,
+        rootUserId: React.PropTypes.string.isRequired,
         showGraph: React.PropTypes.bool.isRequired,
         toggleShowGraph: React.PropTypes.func.isRequired
     }
@@ -30,12 +31,16 @@ class PaymentsGraph extends React.Component {
             return {id: payment.id, from: payment.actorId, to: payment.targetId}
         })
 
-        const graphNodes = adjacencyList.flatMap((payment) => {
+        let graphNodes = adjacencyList.flatMap((payment) => {
             return new Immutable.fromJS([
                 {id: payment.actorId, label: payment.actorName},
                 {id: payment.targetId, label: payment.targetName}
             ])
         }).toSet()
+
+        if (this.props.rootUserId !== '') {
+            graphNodes = this.getGroupedNodes(graphNodes, graphEdges)
+        }
 
         const graphData = {
             nodes: graphNodes.toJS(),
@@ -57,6 +62,36 @@ class PaymentsGraph extends React.Component {
                 </CardMedia>
             </Card>
         )
+    }
+
+    getGroupedNodes(graphNodes, graphEdges) {
+        const nodeDegreeMap = graphEdges.reduce((degreeMap, edge) => {
+            const nodeId = edge.to
+            const currentNodeDegree = degreeMap.get(nodeId, 1000)
+
+            let newNodeDegree
+            if (edge.from === this.props.rootUserId) {
+                newNodeDegree = 1
+            } else {
+                newNodeDegree = 2
+            }
+
+            return (newNodeDegree < currentNodeDegree) ?
+                degreeMap.set(nodeId, newNodeDegree) : degreeMap
+        }, new Immutable.Map({[this.props.rootUserId]: 0}))
+
+        return graphNodes.map(node => {
+            const nodeDegree = nodeDegreeMap.get(node.get('id'))
+            let nodeGroup = ''
+            if (nodeDegree === 0) {
+                nodeGroup = 'rootNode'
+            } else if (nodeDegree === 1) {
+                nodeGroup = 'firstDegree'
+            } else if (nodeDegree === 2) {
+                nodeGroup = 'secondDegree'
+            }
+            return node.set('group', nodeGroup)
+        })
     }
 }
 

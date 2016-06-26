@@ -1,4 +1,5 @@
 import React from 'react'
+import {red300, purple300, lime300} from 'material-ui/styles/colors'
 
 const vis = require('vis')
 const uuid = require('uuid')
@@ -35,22 +36,30 @@ class Graph extends React.Component {
     }
 
     changeMode(event) {
-        this.setState({
-            hierarchicalLayout: !this.state.hierarchicalLayout
-        })
         this.updateGraph()
     }
 
     updateGraph() {
         let container = document.getElementById(this.props.identifier)
         let options = {
-            physics: {stabilization: true},
             edges: {
                 color: '#000000',
                 width: 0.5,
                 arrows: {
                     to: {scaleFactor: 0.5}
                 }
+            },
+            groups: {
+                rootNode: {color: {background: red300}},
+                firstDegree: {color: {background: purple300}},
+                secondDegree: {color: {background: lime300}}
+            },
+            interaction: {
+                dragNodes: true
+            },
+            physics: {
+                enabled: true,
+                stabilization: true
             }
         }
 

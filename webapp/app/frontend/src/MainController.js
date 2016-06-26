@@ -43,6 +43,7 @@ class MainController extends React.Component {
             queryWordPayments: new Immutable.List(),
             queryWordTopUsers: new Immutable.List(),
             selectedUserAdjacency: new Immutable.List(),
+            selectedUserId: '',
             showGraph: false,
             significantTermsCount: new Immutable.Map()
         }
@@ -88,6 +89,7 @@ class MainController extends React.Component {
                 />
                 <PaymentsGraph
                     adjacencyList={adjacencyList}
+                    rootUserId={this.state.selectedUserId}
                     showGraph={this.state.showGraph}
                     toggleShowGraph={this.toggleShowGraph}
                 />
@@ -134,6 +136,7 @@ class MainController extends React.Component {
             queryWordPayments: new Immutable.List(),
             queryWordTopUsers: new Immutable.List(),
             selectedUserAdjacency: new Immutable.List(),
+            selectedUserId: '',
             showGraph: false,
             significantTermsCount: new Immutable.Map()
         }, this.fetchQueryWordPayments)
@@ -236,13 +239,16 @@ class MainController extends React.Component {
         const user = this.state.queryWordAdjacency.find(
             userEntry => userEntry.get('actor_name') === userName
         )
-        this.fetchUserAdjacency(user.get('actor_id'))
+        const selectedUserId = user.get('actor_id')
+        this.setState({
+            selectedUserId
+        }, this.fetchUserAdjacency)
     }
 
-    fetchUserAdjacency = (userId) => {
+    fetchUserAdjacency = () => {
         fetch(
             REST_API.USER_ADJACENCY_LIST(
-                userId,
+                this.state.selectedUserId,
                 this.state.queryStartDate,
                 this.state.queryEndDate
             )
