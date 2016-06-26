@@ -12,6 +12,7 @@ class WordCloudController extends React.Component {
         latestWordCount: React.PropTypes.object.isRequired,
         onClickCloudWord: React.PropTypes.func,
         queryWord: React.PropTypes.string.isRequired,
+        queryWordPayments: React.PropTypes.object.isRequired,
         significantWordCount: React.PropTypes.object.isRequired
     }
 
@@ -66,12 +67,30 @@ class WordCloudController extends React.Component {
     }
 
     getCloudData() {
-        const cloudWordCount = this.props.hasQueryWord ?
-            this.props.significantWordCount : this.props.latestWordCount
-
+        const cloudWordCount = this.getCloudWordCounts()
         return cloudWordCount.sort().reverse().map((count, token) => {
             return {value: token, count}
         }).valueSeq().take(100).toArray()
+    }
+
+    getCloudWordCounts() {
+        if (!this.props.hasQueryWord) {
+            return this.props.latestWordCount
+        }
+
+        const paymentsWordCount = this.props.queryWordPayments.flatMap(
+            payment => {
+                const message = payment.get('message')
+                const tokens = message.toLowerCase().split(' ')
+                return new Immutable.List(tokens)
+            }).map(
+                token => token.replace(/[^a-z]+/g, '')
+            ).filter(
+                token => token.length > 2
+            ).filterNot(
+                token => token === 'for' || token === "and" || token === "the" || token === "you"
+            ).countBy(token => token)
+        return this.props.significantWordCount.concat(paymentsWordCount)
     }
 
     onClickCloudTag = (tag) => {

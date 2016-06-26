@@ -81,6 +81,7 @@ class MainController extends React.Component {
                     latestWordCount={this.state.latestWordCount}
                     onClickCloudWord={this.addQueryWord}
                     queryWord={this.state.queryWord}
+                    queryWordPayments={this.state.queryWordPayments}
                     significantWordCount={this.state.significantTermsCount}
                 />
                 <TopUsersView
