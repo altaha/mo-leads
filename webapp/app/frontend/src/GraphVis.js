@@ -1,5 +1,6 @@
 import React from 'react'
 import {red300, purple300, lime300} from 'material-ui/styles/colors'
+import {shouldComponentUpdate} from 'react-immutable-render-mixin'
 
 const vis = require('vis')
 const uuid = require('uuid')
@@ -9,7 +10,7 @@ class Graph extends React.Component {
 
     static propTypes = {
         graph: React.PropTypes.object,
-        identified: React.PropTypes.string,
+        identifier: React.PropTypes.string,
         onClickEdge: React.PropTypes.func,
         onClickNode: React.PropTypes.func,
         style: React.PropTypes.object
@@ -26,6 +27,8 @@ class Graph extends React.Component {
     state = {
         hierarchicalLayout: false
     }
+
+    shouldComponentUpdate = shouldComponentUpdate
 
     componentDidMount() {
         this.updateGraph()

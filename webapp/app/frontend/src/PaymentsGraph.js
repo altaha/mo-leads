@@ -1,8 +1,10 @@
 import Immutable from 'immutable'
 import React from 'react'
+import {shouldComponentUpdate} from 'react-immutable-render-mixin'
 
 import {Card, CardHeader, CardMedia} from 'material-ui/Card'
 import Graph from './GraphVis'
+import Snackbar from 'material-ui/Snackbar'
 
 
 class PaymentsGraph extends React.Component {
@@ -12,6 +14,13 @@ class PaymentsGraph extends React.Component {
         showGraph: React.PropTypes.bool.isRequired,
         toggleShowGraph: React.PropTypes.func.isRequired
     }
+
+    state = {
+        edgeInfo: '',
+        showEdgeInfo: false
+    }
+
+    shouldComponentUpdate = shouldComponentUpdate
 
     render() {
         const adjacencyList = this.props.adjacencyList.map((payment) => {
@@ -47,7 +56,7 @@ class PaymentsGraph extends React.Component {
             edges: graphEdges.toArray()
         }
 
-        return (
+        const graphCard = (
             <Card
                 expanded={this.props.showGraph}
                 onExpandChange={this.props.toggleShowGraph}
@@ -58,9 +67,24 @@ class PaymentsGraph extends React.Component {
                     title="Connections Graph"
                 />
                 <CardMedia expandable={true} >
-                    <Graph graph={graphData} />
+                    <Graph
+                        graph={graphData}
+                        onClickEdge={this.onClickEdge}
+                    />
                 </CardMedia>
             </Card>
+        )
+
+        return (
+            <div>
+                {graphCard}
+                <Snackbar
+                    open={this.state.showEdgeInfo}
+                    message={this.state.edgeInfo}
+                    autoHideDuration={3000}
+                    onRequestClose={this.hideEdgeInfo}
+                />
+            </div>
         )
     }
 
@@ -92,6 +116,21 @@ class PaymentsGraph extends React.Component {
             }
             return node.set('group', nodeGroup)
         })
+    }
+
+    onClickEdge = (edgeId) => {
+        const payment = this.props.adjacencyList.find(
+            edge => edge.get('id') === edgeId
+        )
+        const paymentInfo = `message: ${payment.get('message')}, time: ${payment.get('time')}`
+        this.setState({
+            edgeInfo: paymentInfo,
+            showEdgeInfo: true
+        })
+    }
+
+    hideEdgeInfo = () => {
+        this.setState({showEdgeInfo: false})
     }
 }
 
