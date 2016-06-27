@@ -60,7 +60,6 @@ class KafkaWriter(object):
         with open(file_name, 'r') as reader:
             for line in reader:
                 self.write(kafka_topic, line)
-        self.producer.flush()
 
 
 VENMO_BUCKET='venmo-json'
@@ -76,7 +75,7 @@ if __name__ == "__main__":
     source = str(args[1])
     if source == 's3':
         reader = S3BucketReader(VENMO_BUCKET)
-        for line in reader.lines(NUM_RECORDS):
+        for line in reader.lines(-1):
             kafka_writer.write(KAFKA_TOPIC, line)
     elif source == 'dump':
         num_producers = 1
