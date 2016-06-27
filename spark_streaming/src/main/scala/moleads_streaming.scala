@@ -19,7 +19,7 @@ object MoLeadsStreaming {
     val kafkaBroker = "ec2-52-41-59-147.us-west-2.compute.amazonaws.com:9092"
     val kafkaTopics = "venmo-data"
     val elasticsearchUrl = "ec2-52-41-104-228.us-west-2.compute.amazonaws.com"
-    val cassandraHost = "ec2-52-10-45-242.us-west-2.compute.amazonaws.com"
+    val cassandraHost = "ec2-52-41-158-217.us-west-2.compute.amazonaws.com"
 
     def main(args: Array[String]) {
 

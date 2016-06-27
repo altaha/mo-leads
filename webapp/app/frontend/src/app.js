@@ -14,7 +14,7 @@ window.Promise = Promise
 const containerStyle = {
     marginLeft: 'auto',
     marginRight: 'auto',
-    width: 600
+    width: 680
 }
 
 export class App extends React.Component {

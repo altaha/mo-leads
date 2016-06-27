@@ -1,7 +1,7 @@
 import Immutable from 'immutable'
 import React from 'react'
 
-import AppBar from 'material-ui/AppBar'
+import AppHeader from './AppHeader'
 import PaymentsGraph from './PaymentsGraph'
 import TopUsersView from './TopUsersView'
 import UserInputController from './UserInputController'
@@ -63,10 +63,7 @@ class MainController extends React.Component {
 
         return (
             <div>
-                <AppBar
-                    title="Venmo Leads"
-                    showMenuIconButton={false}
-                />
+                <AppHeader />
                 <UserInputController
                     onSubmitQuery={this.onSubmitQuery}
                     onUpdateQueryEndDate={this.onUpdateQueryEndDate}
