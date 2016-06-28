@@ -3,7 +3,9 @@ import React from 'react'
 
 import Avatar from 'material-ui/Avatar'
 import {Card, CardHeader, CardText} from 'material-ui/Card'
+import IconButton from 'material-ui/IconButton'
 import {List, ListItem} from 'material-ui/List'
+import NavigationClose from 'material-ui/svg-icons/navigation/close'
 import Subheader from 'material-ui/Subheader'
 
 
@@ -25,6 +27,8 @@ const dummyImagesList = new Immutable.List([
 class TopUsersView extends React.Component {
     static propTypes = {
         onClickUser: React.PropTypes.func.isRequired,
+        onUnselectUser: React.PropTypes.func.isRequired,
+        selectedUserName: React.PropTypes.string.isRequired,
         topUsers: React.PropTypes.object.isRequired
     }
 
@@ -34,18 +38,25 @@ class TopUsersView extends React.Component {
         }
 
         let dummyList = dummyImagesList
-        const topUsersListItems = this.props.topUsers.map((count, user) => {
+        const topUsersListItems = this.props.topUsers.map((count, userName) => {
             const dummyIndex = Math.floor(Math.random() * dummyList.count())
             const dummyImageName = dummyList.get(dummyIndex)
             dummyList = dummyList.delete(dummyIndex)
-
             const avatarImageSrc = `static/images/${dummyImageName}`
+
+            const unselectButton = (userName === this.props.selectedUserName) ? (
+                <IconButton onClick={this.onUnselectUser} >
+                    <NavigationClose />
+                </IconButton>
+            ) : null
+
             return (
                 <ListItem
-                    key={user}
+                    key={userName}
                     leftAvatar={<Avatar src={avatarImageSrc} />}
-                    onClick={this.onClickUser.bind(this, user)}
-                    primaryText={user}
+                    onClick={this.onClickUser.bind(this, userName)}
+                    primaryText={userName}
+                    rightIconButton={unselectButton}
                     secondaryText={`${count} payments`}
                 />
             )
@@ -71,8 +82,13 @@ class TopUsersView extends React.Component {
         )
     }
 
-    onClickUser = (user) => {
-        this.props.onClickUser(user)
+    onClickUser = (userName) => {
+        this.props.onClickUser(userName)
+    }
+
+    onUnselectUser = (event) => {
+        event.stopPropagation()
+        this.props.onUnselectUser()
     }
 }
 

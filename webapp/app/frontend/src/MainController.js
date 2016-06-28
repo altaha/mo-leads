@@ -44,6 +44,7 @@ class MainController extends React.Component {
             queryWordTopUsers: new Immutable.List(),
             selectedUserAdjacency: new Immutable.List(),
             selectedUserId: '',
+            selectedUserName: '',
             showGraph: false,
             significantTermsCount: new Immutable.Map()
         }
@@ -78,10 +79,13 @@ class MainController extends React.Component {
                     latestWordCount={this.state.latestWordCount}
                     onClickCloudWord={this.addQueryWord}
                     queryWord={this.state.queryWord}
+                    selectedUserAdjacency={this.state.selectedUserAdjacency}
                     significantWordCount={this.state.significantTermsCount}
                 />
                 <TopUsersView
                     onClickUser={this.onClickUser}
+                    onUnselectUser={this.onUnselectUser}
+                    selectedUserName={this.state.selectedUserName}
                     topUsers={this.state.queryWordTopUsers}
                 />
                 <PaymentsGraph
@@ -134,6 +138,7 @@ class MainController extends React.Component {
             queryWordTopUsers: new Immutable.List(),
             selectedUserAdjacency: new Immutable.List(),
             selectedUserId: '',
+            selectedUserName: '',
             showGraph: false,
             significantTermsCount: new Immutable.Map()
         }, this.fetchQueryWordPayments)
@@ -232,13 +237,23 @@ class MainController extends React.Component {
         })
     }
 
+    onUnselectUser = () => {
+        console.log(this.state)
+        this.setState({
+            selectedUserAdjacency: new Immutable.List(),
+            selectedUserId: '',
+            selectedUserName: ''
+        })
+        console.log(this.state)
+    }
+
     onClickUser = (userName) => {
         const user = this.state.queryWordAdjacency.find(
             userEntry => userEntry.get('actor_name') === userName
         )
-        const selectedUserId = user.get('actor_id')
         this.setState({
-            selectedUserId
+            selectedUserId: user.get('actor_id'),
+            selectedUserName: user.get('actor_name')
         }, this.fetchUserAdjacency)
     }
 
