@@ -1,4 +1,4 @@
-purchase_type: spot
+purchase_type: on_demand
 subnet_id: subnet-c1eb68a5
 price: 0.13
 num_instances: 3

@@ -9,7 +9,7 @@ from cassandra.cluster import Cluster
 from elasticsearch import Elasticsearch
 
 # setting up connections to cassandra
-es = Elasticsearch(['ec2-52-41-104-228.us-west-2.compute.amazonaws.com'])
+es = Elasticsearch(['ec2-52-42-8-88.us-west-2.compute.amazonaws.com'])
 cluster = Cluster(['localhost'])
 session = cluster.connect('moleads')
 
@@ -92,7 +92,7 @@ def get_elastic_search_messages(keywords):
 
     query_body = {
         'from': 0, 'size': 100,
-        'query': {'match': {'message': keywords}}
+        'query': {'match_phrase': {'message': keywords}}
     }
     significant_terms_query = {
         'aggs': {
