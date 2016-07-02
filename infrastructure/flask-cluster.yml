@@ -1,0 +1,10 @@
+purchase_type: on_demand
+subnet_id: subnet-c1eb68a5
+num_instances: 1
+key_name: ahmed-altaha
+security_group_ids: sg-d5b97fb3
+instance_type: t2.micro
+tag_name: flask-cluster-ahmed
+vol_size: 50
+role: master
+use_eips: true
