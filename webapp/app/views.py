@@ -8,10 +8,18 @@ from app import app
 from cassandra.cluster import Cluster
 from elasticsearch import Elasticsearch
 
+# setting up connections to elasticsearch
+try:
+    es = Elasticsearch(['ec2-52-42-8-88.us-west-2.compute.amazonaws.com'])
+except:
+    es = None
+
 # setting up connections to cassandra
-es = Elasticsearch(['ec2-52-42-8-88.us-west-2.compute.amazonaws.com'])
-cluster = Cluster(['localhost'])
-session = cluster.connect('moleads')
+try:
+    cluster = Cluster(['localhost'])
+    session = cluster.connect('moleads')
+except:
+    session = None
 
 
 @app.route('/')
