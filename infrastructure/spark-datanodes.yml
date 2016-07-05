@@ -1,7 +1,7 @@
-purchase_type: on_demand
+purchase_type: spot
 subnet_id: subnet-c1eb68a5
-price: 0.13
-num_instances: 3
+price: 0.14
+num_instances: 2
 key_name: ahmed-altaha
 security_group_ids: sg-d5b97fb3
 instance_type: m4.large

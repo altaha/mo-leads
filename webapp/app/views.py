@@ -10,13 +10,13 @@ from elasticsearch import Elasticsearch
 
 # setting up connections to elasticsearch
 try:
-    es = Elasticsearch(['ec2-52-42-8-88.us-west-2.compute.amazonaws.com'])
+    es = Elasticsearch(['ec2-52-42-25-17.us-west-2.compute.amazonaws.com'])
 except:
     es = None
 
 # setting up connections to cassandra
 try:
-    cluster = Cluster(['localhost'])
+    cluster = Cluster(['ec2-52-42-38-11.us-west-2.compute.amazonaws.com'])
     session = cluster.connect('moleads')
 except:
     session = None
