@@ -1,7 +1,7 @@
 # Mo Leads
 Insight Data Engineering Project - Generating Sales Leads from Venmo transactions data
 
-www.moleads.altaha.me
+[Video demo](https://www.youtube.com/watch?v=9nHyXeSqYko)
 
 ![alt tag](https://raw.githubusercontent.com/altaha/mo-leads/master/webapp/app/frontend/public/static/images/moleads_screenshot.png)
 
