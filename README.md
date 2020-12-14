@@ -1,5 +1,7 @@
+For Mila Reviewers: All my recent work is closed source. This is a sample from a previous project to demonstrate general coding and software skills, though not strictly AI related.
+
 # Mo Leads
-Insight Data Engineering Project - Generating Sales Leads from Venmo transactions data
+Real-time data pipeling for Mining Sales leads from Venmo transactions
 
 [Video demo](https://www.youtube.com/watch?v=9nHyXeSqYko)
 
